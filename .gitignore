@@ -1,3 +1,5 @@
 test_env/
 output_result.csv
 progress.txt
+.DS_Store
+result-2.nnp

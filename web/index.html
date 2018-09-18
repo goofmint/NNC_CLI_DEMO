@@ -1,0 +1,103 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>MNIST TEST</title>
+  </head>
+  <body>
+    <h1>MNIST TEST</h1>
+    <div>4または9を書いてください</div>
+    <p>
+      <canvas id="canvas" width="400" height="400" style="border: 1px solid #999;">
+      </canvas>
+    </p>
+    <input id="clear" type="button" value="消す" onclick="clearCanvas();">
+    <input id="submit" type="button" value="4か9か判定" onclick="judgeImg();"><br><br>
+    <span id="answer"></span>
+    <script>
+      // キャンバスオブジェクト
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      // Canvasの座標
+      const cleft = canvas.getBoundingClientRect().left;
+      const ctop = canvas.getBoundingClientRect().top;
+      // マウスのX/Y座標
+      let mouseX = mouseY = null;
+      // キャンバスの内容をリセット
+      clearCanvas();
+      
+      // イベントの設定
+      canvas.addEventListener('mousemove', mmove, false);
+      canvas.addEventListener('mousedown', mdown, false);
+      canvas.addEventListener('mouseup', mouseInit, false);
+      canvas.addEventListener('mouseout', mouseInit, false); 
+      
+      // マウスを動かしている時のイベント
+      function mmove(e){
+        if (e.buttons == 1 || e.witch == 1) {
+          draw(e.clientX - cleft, e.clientY - ctop);
+        };
+      }
+      
+      // マウスが押されている時のイベント
+      function mdown(e){
+        draw(e.clientX - cleft, e.clientY - ctop);
+      }
+      
+      // 描画処理
+      function draw(x, y){
+        ctx.beginPath();
+        if (mouseX === null) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.moveTo(mouseX, mouseY);
+        }
+        ctx.lineTo(x, y);
+        ctx.lineCap = "round";
+        // 線の太さは18、色は白
+        ctx.lineWidth = 18;
+        ctx.strokeStyle = '#fff';
+        // 少し周りをぼかす
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#fff';
+        ctx.stroke();
+        mouseX = x;
+        mouseY = y;
+      }
+      
+      // X/Yを初期化する処理
+      function mouseInit(){
+        mouseX = mouseY = null;
+      }
+      
+      // Canvasの内容を消す処理
+      function clearCanvas(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        document.querySelector('#answer').innerHTML = '';
+      }
+      
+      // 画像をサーバに送信
+      function judgeImg(){
+        // Canvasの内容をPNG画像として取り出す
+        const img = document.querySelector('#canvas').toDataURL('image/png');
+        // 画像をフォームデータとして設定
+        const f = new FormData();
+        f.append('img', img);
+        // サーバに送信
+        fetch('/img', {
+          method: 'POST',
+          body: f
+        })
+        .then(res => {
+          // 結果をJSONとして取り出す
+          return res.json();
+        })
+        .then(json => {
+          // 結果の数値を見て9か4か判定
+          document.querySelector("#answer").innerText = (json.result > 0.2 ? '9' : '4') + 'です';
+        })
+      }
+    </script>
+  </body>
+</html>
