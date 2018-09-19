@@ -16,7 +16,7 @@ nn.clear_parameters()
 # index.html を表示する処理
 @get('/')
 def index():
-    return template(open('./index.html').read())
+    return template(open('./index.html', 'r', encoding='UTF-8').read())
 
 # 画像の判定処理
 @post('/img')
